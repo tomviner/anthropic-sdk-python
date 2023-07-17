@@ -1,0 +1,46 @@
+name: Run Tests
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+
+jobs:
+  setup:
+    name: install requirements
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install python dependencies
+        run: |
+          pip install poetry
+          poetry install
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+
+      - name: Install node dependencies
+        run: |
+          npm install -g @stoplight/prism-cli
+
+      - name: Start API mock server
+        run: |
+          prism mock tests/openapi.yml &
+          until nc -z localhost 4010; do sleep 0.5; done
+
+      - name: Run tests with pydantic v1
+        run: |
+          poetry run python3 -c 'import pydantic as p;print(p.version.VERSION)'
+          ./bin/test
+
+      - name: Run tests with pydantic v2
+        run: |
+          poetry add 'pydantic>=2'
+          poetry run python3 -c 'import pydantic; print(pydantic.version.VERSION)'
+          ./bin/test
