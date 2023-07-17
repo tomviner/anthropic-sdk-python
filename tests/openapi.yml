@@ -1,0 +1,316 @@
+# generated spec, based on docs
+
+openapi: 3.0.2
+info:
+  title: Anthropic API
+  version: 0.0.0
+paths:
+  /v1/complete:
+    post:
+      tags:
+        - Completions
+      summary: Create a completion
+      operationId: complete_post
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionResponse'
+        '4XX':
+          description: Client Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    APIError:
+      title: APIError
+      type: object
+      properties:
+        type:
+          title: Type
+          default: api_error
+          enum:
+            - api_error
+          type: string
+        message:
+          title: Message
+          default: Internal server error
+          type: string
+      required:
+        - type
+        - message
+    AuthenticationError:
+      title: AuthenticationError
+      type: object
+      properties:
+        type:
+          title: Type
+          default: authentication_error
+          enum:
+            - authentication_error
+          type: string
+        message:
+          title: Message
+          default: Authentication error
+          type: string
+      required:
+        - type
+        - message
+    CompletionResponse:
+      title: CompletionResponse
+      required:
+        - completion
+        - stop_reason
+        - model
+      type: object
+      properties:
+        completion:
+          title: Completion
+          type: string
+          description: The resulting completion up to and excluding the stop sequences.
+          example: 'Hello! My name is Claude.'
+        stop_reason:
+          title: Stop Reason
+          type: string
+          description: |-
+            The reason that we stopped sampling.
+            This may be one the following values:
+            * `"stop_sequence"`: we reached a stop sequence — either provided by you via the `stop_sequences` parameter, or a stop sequence built into the model
+            * `"max_tokens"`: we exceeded `max_tokens_to_sample` or the model's maximum
+          example: stop_sequence
+        model:
+          title: Model
+          type: string
+          description: The model that performed the completion.
+          example: claude-2
+    ErrorResponse:
+      title: ErrorResponse
+      type: object
+      properties:
+        error:
+          title: Error
+          discriminator:
+            propertyName: type
+            mapping:
+              invalid_request_error: '#/components/schemas/InvalidRequestError'
+              authentication_error: '#/components/schemas/AuthenticationError'
+              permission_error: '#/components/schemas/PermissionError'
+              not_found_error: '#/components/schemas/NotFoundError'
+              rate_limit_error: '#/components/schemas/RateLimitError'
+              api_error: '#/components/schemas/APIError'
+              overloaded_error: '#/components/schemas/OverloadedError'
+          oneOf:
+            - $ref: '#/components/schemas/InvalidRequestError'
+            - $ref: '#/components/schemas/AuthenticationError'
+            - $ref: '#/components/schemas/PermissionError'
+            - $ref: '#/components/schemas/NotFoundError'
+            - $ref: '#/components/schemas/RateLimitError'
+            - $ref: '#/components/schemas/APIError'
+            - $ref: '#/components/schemas/OverloadedError'
+      required:
+        - error
+    InvalidRequestError:
+      title: InvalidRequestError
+      type: object
+      properties:
+        type:
+          title: Type
+          default: invalid_request_error
+          enum:
+            - invalid_request_error
+          type: string
+        message:
+          title: Message
+          default: Invalid request
+          type: string
+      required:
+        - type
+        - message
+    NotFoundError:
+      title: NotFoundError
+      type: object
+      properties:
+        type:
+          title: Type
+          default: not_found_error
+          enum:
+            - not_found_error
+          type: string
+        message:
+          title: Message
+          default: Not found
+          type: string
+      required:
+        - type
+        - message
+    OverloadedError:
+      title: OverloadedError
+      type: object
+      properties:
+        type:
+          title: Type
+          default: overloaded_error
+          enum:
+            - overloaded_error
+          type: string
+        message:
+          title: Message
+          default: Overloaded
+          type: string
+      required:
+        - type
+        - message
+    PermissionError:
+      title: PermissionError
+      type: object
+      properties:
+        type:
+          title: Type
+          default: permission_error
+          enum:
+            - permission_error
+          type: string
+        message:
+          title: Message
+          default: Permission denied
+          type: string
+      required:
+        - type
+        - message
+    RateLimitError:
+      title: RateLimitError
+      type: object
+      properties:
+        type:
+          title: Type
+          default: rate_limit_error
+          enum:
+            - rate_limit_error
+          type: string
+        message:
+          title: Message
+          default: Rate limited
+          type: string
+      required:
+        - type
+        - message
+    Metadata:
+      title: Metadata
+      type: object
+      properties:
+        user_id:
+          title: User Id
+          description: |-
+            An external identifier for the user who is associated with the request.
+            This should be a uuid, hash value, or other opaque identifier. Anthropic may use this id to help detect abuse. Do not include any identifying information such as name, email address, or phone number.
+          maxLength: 256
+          example: 13803d75-b4b5-4c3e-b2a2-6f21399b021b
+          type: string
+      additionalProperties: false
+    CompletionRequest:
+      title: CompletionRequest
+      type: object
+      properties:
+        model:
+          title: Model
+          description: |-
+            The model that will complete your prompt.
+            As we improve Claude, we develop new versions of it that you can query. This parameter controls which version of Claude answers your request. Right now we are offering two model families: Claude, and Claude Instant. You can use them by setting `model` to `"claude-2"` or `"claude-instant-1"`, respectively. See [models](https://docs.anthropic.com/claude/reference/selecting-a-model) for additional details.
+          example: claude-2
+          type: string
+        prompt:
+          title: Prompt
+          description: |-
+            The prompt that you want Claude to complete.
+            For proper response generation you will need to format your prompt as follows:
+
+            ```javascript
+            const userQuestion = r"Why is the sky blue?";
+            const prompt = `\n\nHuman: ${userQuestion}\n\nAssistant:`;
+            ```
+
+            See our [comments on prompts](https://docs.anthropic.com/claude/docs/introduction-to-prompt-design) for more context.
+          minLength: 1
+          example: |
+            Human: Hello, world!
+
+            Assistant:
+          format: blob
+          type: string
+        max_tokens_to_sample:
+          title: Max Tokens To Sample
+          description: |-
+            The maximum number of tokens to generate before stopping.
+            Note that our models may stop _before_ reaching this maximum. This parameter only specifies the absolute maximum number of tokens to generate.
+          example: 256
+          minimum: 1
+          type: integer
+        stop_sequences:
+          title: Stop Sequences
+          description: |-
+            Sequences that will cause the model to stop generating completion text.
+            Our models stop on `"\n\nHuman:"`, and may include additional built-in stop sequences in the future. By providing the stop_sequences parameter, you may include additional strings that will cause the model to stop generating.
+          type: array
+          items:
+            type: string
+        temperature:
+          title: Temperature
+          description: |-
+            Amount of randomness injected into the response.
+            Defaults to 1. Ranges from 0 to 1. Use temp closer to 0 for analytical / multiple choice, and closer to 1 for creative and generative tasks.
+          example: 1
+          minimum: 0
+          maximum: 1
+          type: number
+        top_p:
+          title: Top P
+          description: |-
+            Use nucleus sampling.
+            In nucleus sampling, we compute the cumulative distribution over all the options for each subsequent token in decreasing probability order and cut it off once it reaches a particular probability specified by `top_p`. You should either alter `temperature` or `top_p`, but not both.
+          example: 0.7
+          minimum: 0
+          maximum: 1
+          type: number
+        top_k:
+          title: Top K
+          description: |-
+            Only sample from the top K options for each subsequent token.
+            Used to remove "long tail" low probability responses. [Learn more technical details here](https://towardsdatascience.com/how-to-sample-from-language-models-682bceb97277).
+          example: 5
+          minimum: 0
+          type: integer
+        metadata:
+          title: Metadata
+          description: An object describing metadata about the request.
+          allOf:
+            - $ref: '#/components/schemas/Metadata'
+          type: object
+        stream:
+          title: Stream
+          description: |-
+            Whether to incrementally stream the response using server-sent events.
+            See [this guide to SSE events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) for details.
+          type: boolean
+      required:
+        - prompt
+        - max_tokens_to_sample
+        - model
+      additionalProperties: false
+      example:
+        model: claude-2
+        prompt: |
+          Human: Hello, world!
+
+          Assistant:
+        max_tokens_to_sample: 256
