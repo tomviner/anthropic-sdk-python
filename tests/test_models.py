@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing_extensions import Literal
 
 import pytest
-from pydantic import Field
+from pydantic.v1 import Field
 
 from anthropic._models import BaseModel
 

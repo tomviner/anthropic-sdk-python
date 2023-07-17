@@ -28,9 +28,9 @@ from typing_extensions import Literal, get_origin
 import anyio
 import httpx
 import distro
-import pydantic
 from httpx import URL, Limits
-from pydantic import PrivateAttr
+from pydantic.v1 import PrivateAttr
+import pydantic.v1 as pydantic
 
 from . import _base_exceptions as exceptions
 from ._qs import Querystring

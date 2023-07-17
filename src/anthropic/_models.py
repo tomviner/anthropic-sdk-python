@@ -5,12 +5,12 @@ from typing import Any, Type, Union, Generic, TypeVar, cast
 from datetime import date, datetime
 from typing_extensions import final
 
-import pydantic
-import pydantic.generics
-from pydantic import Extra
-from pydantic.fields import ModelField
-from pydantic.typing import get_args, is_union, get_origin, is_literal_type
-from pydantic.datetime_parse import parse_date
+import pydantic.v1.generics as pydantic_generics
+from pydantic.v1 import Extra
+from pydantic.v1.fields import ModelField
+from pydantic.v1.typing import get_args, is_union, get_origin, is_literal_type
+from pydantic.v1.datetime_parse import parse_date
+import pydantic.v1 as pydantic
 
 from ._types import (
     Body,
@@ -174,7 +174,7 @@ def _create_pydantic_field(type_: type) -> ModelField:
     return model_type.__fields__["__root__"]
 
 
-class GenericModel(BaseModel, pydantic.generics.GenericModel):
+class GenericModel(BaseModel, pydantic_generics.GenericModel):
     pass
 
 
